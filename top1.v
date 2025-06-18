@@ -4,7 +4,7 @@ module top (
     input wire reset,           
     output wire [31:0] WriteData, 
     output wire [31:0] Adr,       
-    output wire MemWrite          
+    output wire MemWrite           
 );
 
 
