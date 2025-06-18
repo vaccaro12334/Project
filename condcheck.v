@@ -1,20 +1,27 @@
 module condcheck (
-	Cond,
-	Flags,
-	CondEx
+    input wire [3:0] Cond,
+	input wire [3:0] Flags,  
+    output wire CondEx
 );
-	input wire [3:0] Cond;
-	input wire [3:0] Flags;
-	output wire CondEx;
+    wire N, Z, C, V;
+    assign {N, Z, C, V} = Flags;
 
-	// ADD CODE HERE
+    assign CondEx = (Cond == 4'b0000) ?  Z :  // EQ
+                    (Cond == 4'b0001) ? ~Z :  // NE
+                    (Cond == 4'b0010) ?  C :  // CS/HS
+                    (Cond == 4'b0011) ? ~C :  // CC/LO
+                    (Cond == 4'b0100) ?  N :  // MI
+                    (Cond == 4'b0101) ? ~N :  // PL
+                    (Cond == 4'b0110) ?  V :  // VS
+                    (Cond == 4'b0111) ? ~V :  // VC
+                    (Cond == 4'b1000) ? (C & ~Z) :       // HI
+                    (Cond == 4'b1001) ? (~C | Z) :        // LS
+                    (Cond == 4'b1010) ? (N == V) :        // GE
+                    (Cond == 4'b1011) ? (N != V) :        // LT
+                    (Cond == 4'b1100) ? (~Z & (N == V)) : // GT
+                    (Cond == 4'b1101) ? (Z | (N != V)) :  // LE
+	   	    (Cond == 4'b1110) ? 1'b1 :            // AL  
+	             1'b0;                                 // NV
+
 endmodule
-
-// ADD CODE BELOW
-// Complete the datapath module below for Lab 11.
-// You do not need to complete this module for Lab 10.
-// The datapath unit is a structural SystemVerilog module. That is,
-// it is composed of instances of its sub-modules. For example,
-// the instruction register is instantiated as a 32-bit flopenr.
-// The other submodules are likewise instantiated. 
 
