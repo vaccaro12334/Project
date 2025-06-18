@@ -21,10 +21,10 @@ module decode (
 
 	wire Branch;
 	wire ALUOp;
-	wire [3:0] Cond;      // Condición de la instrucción
-	wire [3:0] Flags;     // Flags actuales (asumimos disponibles)
+	wire [3:0] Cond;       
+	wire [3:0] Flags;      
 
-	// --- FSM Principal ---
+ 
 	mainfsm fsm(
 		.clk(clk),
 		.reset(reset),
@@ -42,30 +42,41 @@ module decode (
 		.ALUOp(ALUOp)
 	);
 
-	// --- ALU Decoder ---
+	 
 	aludec aludecoder(
 		.Funct(Funct),
 		.ALUOp(ALUOp),
 		.ALUControl(ALUControl)
 	);
 
-	// --- PC Logic ---
+ 
 	condlogic pclogic(
 		.clk(clk),
 		.reset(reset),
-		.Cond(Cond),         // normalmente viene de Instr[31:28]
-		.Flags(Flags),       // normalmente viene de ALUFlags
+		.Cond(Cond),          
+		.Flags(Flags),        
 		.PCS(PCS),
 		.FlagW(FlagW),
 		.Branch(Branch),
 		.RegW(RegW)
 	);
 
-	// --- Instruction Decoder ---
-	assign ImmSrc = Op;
 
-	// RegSrc = {RnIsPC, RdIsPC}
-	assign RegSrc = {Rd == 4'b1111, Rd == 4'b1111};
+ 	assign PCS = ((Rd == 4'b1111) & RegW) | Branch;
+
+ 	assign ImmSrc = Op;
+	assign RegSrc = {Branch, (Rd == 4'b1111)}; 
+	assign Cond = Funct[31:28];  
+
+ 	condcheck cc(
+		.clk(clk),
+		.reset(reset),
+		.Cond(Cond),
+		.Flags(ALUControl), 
+		.CondEx(CondEx),
+		.FlagW(FlagW)
+	);
+
 endmodule
 
 module aludec(
@@ -75,15 +86,28 @@ module aludec(
 );
     always @(*) begin
         if (!ALUOp)
-            ALUControl = 2'b10; // Suma (por defecto para LDR/STR)
+            ALUControl = 2'b10;  
         else begin
-            case (Funct[4:1])  // considerando bits relevantes de Funct
+		case (Funct[4:1])   
                 4'b0100: ALUControl = 2'b10; // ADD
                 4'b0010: ALUControl = 2'b11; // SUB
                 4'b0000: ALUControl = 2'b00; // AND
                 4'b1100: ALUControl = 2'b01; // ORR
-                default: ALUControl = 2'b10; // default: ADD
+                default: ALUControl = 2'b10; // ADD
             endcase
         end
     end
 endmodule
+module condcheck(
+	input wire clk, reset,
+	input wire [3:0] Cond,
+	input wire [3:0] Flags,
+	output wire CondEx,
+	output wire [1:0] FlagW
+);
+ 
+	assign CondEx = 1'b1;  
+
+	assign FlagW = 2'b11;  
+endmodule
+
