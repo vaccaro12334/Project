@@ -69,9 +69,8 @@ endmodule
 // convenience.
 assign Instr = InstrReg;
 
-    // Banco de registros
-    assign RA1 = (RegSrc[0]) ? 4'b1111 : Instr[19:16]; // Rn or R15
-    assign RA2 = (RegSrc[1]) ? Instr[15:12] : Instr[3:0]; // Rd or Rm
+    assign RA1 = (RegSrc[0]) ? 4'b1111 : Instr[19:16]; 
+    assign RA2 = (RegSrc[1]) ? Instr[15:12] : Instr[3:0]; 
 
     regfile rf (
         .clk(clk),
@@ -84,18 +83,15 @@ assign Instr = InstrReg;
         .rd2(RD2)
     );
 
-    // Extensor de inmediato
     extend ext (
         .Instr(Instr),
         .ImmSrc(ImmSrc),
         .ExtImm(ExtImm)
     );
 
-    // ALU input multiplexers
-    mux3 #(32) srcamux(A, PC, 32'b0, ALUSrcA, SrcA);        // 0:A, 1:PC
-    mux3 #(32) srcbmux(WriteData, ExtImm, 32'd4, ALUSrcB, SrcB); // 0:B, 1:ExtImm, 2:4
+    mux3 #(32) srcamux(A, PC, 32'b0, ALUSrcA, SrcA);        
+    mux3 #(32) srcbmux(WriteData, ExtImm, 32'd4, ALUSrcB, SrcB); 
 
-    // ALU
     alu alu (
         .a(SrcA),
         .b(SrcB),
@@ -104,10 +100,8 @@ assign Instr = InstrReg;
         .flags(ALUFlags)
     );
 
-    // Result mux
     mux3 #(32) resultmux(ALUResult, ALUOut, ReadData, ResultSrc, Result);
 
-    // Address mux
     assign Adr = (AdrSrc) ? ALUOut : PC;
 
 endmodule
