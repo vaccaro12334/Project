@@ -147,3 +147,12 @@ module flopenr #(parameter WIDTH = 8) (
         if (reset) q <= 0;
         else if (en) q <= d;
 endmodule
+module mux3 #(parameter WIDTH = 8) (
+    input wire [WIDTH-1:0] d0, d1, d2,
+    input wire [1:0] s,
+    output wire [WIDTH-1:0] y
+);
+    assign y = (s == 2'b00) ? d0 :
+               (s == 2'b01) ? d1 :
+               d2;
+endmodule
